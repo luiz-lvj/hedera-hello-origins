@@ -21,6 +21,7 @@ contract HederaETF is HederaTokenService, KeyHelper, Ownable {
     event TokenCreated(address tokenAddress);
     event InvestorRegistered(address investor);
     event InvestimentMade(address investor, uint256 amount, uint256 shares);
+    event DesinvestimentMade(address investor, uint256 assets, uint256 shares);
 
     modifier onlyRegisteredInvestor() {
         (int64 responseCode, bool kycGranted) = isKyc(_tokenAddress, msg.sender);
@@ -86,5 +87,16 @@ contract HederaETF is HederaTokenService, KeyHelper, Ownable {
 
         require(responseCode == HederaResponseCodes.SUCCESS, "Failed to mint token");
         emit InvestimentMade(msg.sender, amount, shares);
+    }
+
+    function desinvest(uint256 assets) public onlyRegisteredInvestor {
+        uint256 shares = _vault.withdraw(assets, msg.sender, msg.sender);
+
+        int64[] memory metadata = new int64[](0);
+
+        (int256 responseCode,) = burnToken(_tokenAddress, int64(uint64(shares)), metadata);
+
+        require(responseCode == HederaResponseCodes.SUCCESS, "Failed to burn token");
+        emit DesinvestimentMade(msg.sender, assets, shares);
     }
 }
