@@ -10,6 +10,8 @@ import {IERC4626} from "openzeppelin/interfaces/IERC4626.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 import {Ownable} from "openzeppelin/access/Ownable.sol";
 
+import {HTSContract} from "./hedera/HTSContract.sol";
+
 contract HederaETF is HederaTokenService, KeyHelper, Ownable {
     // Hedera token address
     address private _tokenAddress;
@@ -29,46 +31,54 @@ contract HederaETF is HederaTokenService, KeyHelper, Ownable {
         _;
     }
 
-    constructor(address owner_, address vaultAddress_, address underlyingTokenAddress_) Ownable(owner_) {
+    constructor(address owner_, address vaultAddress_, address underlyingTokenAddress_) Ownable(owner_) payable{
         _vault = IERC4626(vaultAddress_);
         _underlyingToken = IERC20(underlyingTokenAddress_);
-
         _initializeToken();
+    }
+
+    function initializeToken(address tokenAddress_) public onlyOwner {
+        _tokenAddress = tokenAddress_;
     }
 
     function _initializeToken() internal {
         IHederaTokenService.HederaToken memory token;
-        token.name = "Hedera ETF - USDY";
+        token.name = "HETF - USDY";
         token.symbol = "HETF-USDY";
-        token.memo = "Hedera ETF - USDY";
+        token.memo = "HETF - USDY";
         token.treasury = address(this);
 
-        IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](5);
+        IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](1);
 
         // Supply key - for minting/burning
         keys[0] = getSingleKey(KeyType.SUPPLY, KeyValueType.CONTRACT_ID, address(this));
 
-        // Pause key
-        keys[1] = getSingleKey(KeyType.PAUSE, KeyValueType.CONTRACT_ID, address(this));
+        // // Pause key
+        // keys[1] = getSingleKey(KeyType.PAUSE, KeyValueType.CONTRACT_ID, address(this));
 
-        // Freeze key
-        keys[2] = getSingleKey(KeyType.FREEZE, KeyValueType.CONTRACT_ID, address(this));
+        // // Freeze key
+        // keys[2] = getSingleKey(KeyType.FREEZE, KeyValueType.CONTRACT_ID, address(this));
 
-        // Wipe key
-        keys[3] = getSingleKey(KeyType.WIPE, KeyValueType.CONTRACT_ID, address(this));
+        // // Wipe key
+        // keys[3] = getSingleKey(KeyType.WIPE, KeyValueType.CONTRACT_ID, address(this));
 
-        // Delete key
-        keys[4] = getSingleKey(KeyType.ADMIN, KeyValueType.CONTRACT_ID, address(this));
+        // // Delete key
+        // keys[4] = getSingleKey(KeyType.ADMIN, KeyValueType.CONTRACT_ID, address(this));
 
         token.tokenKeys = keys;
 
-        (int256 responseCode, address createdTokenAddress) = createFungibleToken(token, 0, 6);
+        // (int256 responseCode, address createdTokenAddress) = createFungibleToken(token, 0, 6);
 
-        require(responseCode == HederaResponseCodes.SUCCESS, "Failed to create token");
+        (int256 responseCode, address createdTokenAddress) = HTSContract(0x000000000000000000000000000000000063b876).
+            createFungibleTokenPublic(token.name, token.symbol, token.memo, 0, 1000000000000, 6, false, address(this), keys);
+
+        //require(responseCode == HederaResponseCodes.SUCCESS, "Failed to create token");
 
         _tokenAddress = createdTokenAddress;
         emit TokenCreated(_tokenAddress);
     }
+
+    
 
     function registerInvestorSelf() public {
         int256 responseCode = grantTokenKyc(_tokenAddress, msg.sender);

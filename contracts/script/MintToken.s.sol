@@ -12,13 +12,10 @@ contract HederaETFScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        address owner = 0x20075328386f9C96C7f82d4BF144fc890a64fb38;
+        address owner = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
 
         MockERC20 usdc = MockERC20(address(0x61595c6EeF6ea1F6413dE383106C957dE524197c));
-        Vault vaultUsdY = Vault(address(0xE51143129eb2C1af2505DF6fa2216D4bfF2102D0));
-        HederaETF hederaETF = new HederaETF(owner, address(vaultUsdY), address(usdc));
-
-        console.log("HederaETF address", address(hederaETF));
+        usdc.mint(owner, 1000 ether);
 
         vm.stopBroadcast();
     }

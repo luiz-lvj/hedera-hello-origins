@@ -11,6 +11,8 @@ contract HederaETFScript is Script {
 
     function run() public {
         vm.startBroadcast();
+
+        HederaETF hederaETF = HederaETF(address(0));
         hederaETF.desinvest(500 * 10 ** 6);
 
         vm.stopBroadcast();
