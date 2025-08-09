@@ -99,4 +99,14 @@ contract HederaETF is HederaTokenService, KeyHelper, Ownable {
         require(responseCode == HederaResponseCodes.SUCCESS, "Failed to burn token");
         emit DesinvestimentMade(msg.sender, assets, shares);
     }
+
+    // View functions
+    function getTokenAddress() public view returns (address) {
+        return _tokenAddress;
+    }
+
+    function isUserRegistered(address user) public returns (bool) {
+        (int64 responseCode, bool kycGranted) = isKyc(_tokenAddress, user);
+        return responseCode == HederaResponseCodes.SUCCESS && kycGranted;
+    }
 }

@@ -7,6 +7,8 @@ import {HederaETF} from "../src/HederaETF.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {Vault} from "../src/Vault.sol";
 
+import {HederaResponseCodes} from "../src/hedera/HederaResponseCodes.sol";
+
 contract HederaETFTest is Test {
     MockERC20 public usdc;
     Vault public vaultUsdY;
@@ -29,5 +31,30 @@ contract HederaETFTest is Test {
 
     function test_registerInvestor() public {
         hederaETF.registerInvestor();
+
+        assertTrue(hederaETF.isUserRegistered(user));
+    }
+
+    function test_invest() public {
+        hederaETF.registerInvestor();
+        hederaETF.invest(1000 ether);
+
+        assertTrue(hederaETF.isUserRegistered(user));
+    }
+
+    function test_desinvest() public {
+        hederaETF.registerInvestor();
+        hederaETF.invest(1000 ether);
+        hederaETF.desinvest(1000 ether);
+    }
+
+    function test_revertInvestIfNotRegistered() public {
+        vm.expectRevert("Not a registered investor");
+        hederaETF.invest(1000 ether);
+    }
+
+    function test_revertDesinvestIfNotRegistered() public {
+        vm.expectRevert("Not a registered investor");
+        hederaETF.desinvest(1000 ether);
     }
 }
