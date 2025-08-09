@@ -70,11 +70,17 @@ contract HederaETF is HederaTokenService, KeyHelper, Ownable {
         emit TokenCreated(_tokenAddress);
     }
 
-    function registerInvestor() public {
+    function registerInvestorSelf() public {
         int256 responseCode = grantTokenKyc(_tokenAddress, msg.sender);
 
         require(responseCode == HederaResponseCodes.SUCCESS, "Failed to grant KYC");
         emit InvestorRegistered(msg.sender);
+    }
+
+    function registerInvestor(address investor) public onlyOwner {
+        int256 responseCode = grantTokenKyc(_tokenAddress, investor);
+        require(responseCode == HederaResponseCodes.SUCCESS, "Failed to grant KYC");
+        emit InvestorRegistered(investor);
     }
 
     function invest(uint256 amount) public onlyRegisteredInvestor {

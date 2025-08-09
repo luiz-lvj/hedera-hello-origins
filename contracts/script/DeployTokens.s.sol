@@ -14,6 +14,9 @@ contract DeployTokensScript is Script {
         MockERC20 usdc = new MockERC20("USDC", "USDC");
         Vault vaultUsdY = new Vault(usdc, "USDY", "USDY");
 
+        console.log("USDC address", address(usdc));
+        console.log("Vault address", address(vaultUsdY));
+
         address owner = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
 
         usdc.mint(owner, 1000 ether);

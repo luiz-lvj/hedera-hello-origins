@@ -29,21 +29,21 @@ contract HederaETFTest is Test {
         usdc.mint(user, 1000 ether);
     }
 
-    function test_registerInvestor() public {
-        hederaETF.registerInvestor();
+    function test_registerInvestorSelf() public {
+        hederaETF.registerInvestorSelf();
 
         assertTrue(hederaETF.isUserRegistered(user));
     }
 
     function test_invest() public {
-        hederaETF.registerInvestor();
+        hederaETF.registerInvestorSelf();
         hederaETF.invest(1000 ether);
 
         assertTrue(hederaETF.isUserRegistered(user));
     }
 
     function test_desinvest() public {
-        hederaETF.registerInvestor();
+        hederaETF.registerInvestorSelf();
         hederaETF.invest(1000 ether);
         hederaETF.desinvest(1000 ether);
     }
